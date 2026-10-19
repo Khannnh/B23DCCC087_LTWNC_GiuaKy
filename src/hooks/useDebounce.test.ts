@@ -1,14 +1,14 @@
-/// <reference types="@types/jest" />
 import { renderHook, act } from '@testing-library/react';
 import { useDebounce } from './useDebounce';
+import { vi } from 'vitest';
 
 describe('useDebounce hook', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('hoãn cập nhật giá trị sau thời gian quy định', () => {
@@ -24,13 +24,13 @@ describe('useDebounce hook', () => {
 
     // Khi thời gian chưa chạm mốc 300ms, giá trị vẫn là cũ
     act(() => {
-      jest.advanceTimersByTime(200);
+      vi.advanceTimersByTime(200); // Đổi từ jest sang vi
     });
     expect(result.current).toBe('initial');
 
     // Sau khi đủ 300ms, giá trị cập nhật sang mới
     act(() => {
-      jest.advanceTimersByTime(100);
+      vi.advanceTimersByTime(100); // Đổi từ jest sang vi
     });
     expect(result.current).toBe('updated');
   });
