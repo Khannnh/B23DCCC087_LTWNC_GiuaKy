@@ -1,6 +1,5 @@
-// src/App.tsx
 import React, { Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from './src/app/hooks';
 import { loadBooks } from './src/features/books/booksSlice';
 import { BookList } from './src/features/books/components/BookList';
@@ -22,17 +21,25 @@ export function App() {
 
   return (
     <div style={{
-      backgroundColor: theme === 'light' ? '#fff' : '#222',
-      color: theme === 'light' ? '#000' : '#fff',
+      backgroundColor: theme === 'light' ? '#f8f9fa' : '#1e1e1e',
+      color: theme === 'light' ? '#212529' : '#f8f9fa',
       minHeight: '100vh',
-      padding: '16px'
+      padding: '24px',
+      fontFamily: 'sans-serif'
     }}>
-      <header>
-        <h1>Mini Library</h1>
-        <button onClick={toggleTheme}>Đổi sang chế độ {theme === 'light' ? 'Tối' : 'Sáng'}</button>
-        <nav style={{ margin: '10px 0' }}>
-          <Link to="/" style={{ marginRight: '10px', color: 'inherit' }}>Trang chủ</Link>
-          <Link to="/stats" style={{ color: 'inherit' }}>Thống kê</Link>
+      <header style={{ borderBottom: '1px solid #ccc', paddingBottom: '12px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2>📚 Mini Library</h2>
+          <button 
+            onClick={toggleTheme}
+            style={{ padding: '8px 14px', cursor: 'pointer', borderRadius: '4px' }}
+          >
+            Chế độ: {theme === 'light' ? '☀️ Sáng' : '🌙 Tối'}
+          </button>
+        </div>
+        <nav style={{ marginTop: '12px', display: 'flex', gap: '16px' }}>
+          <Link to="/" style={{ color: 'inherit', fontWeight: 'bold' }}>Trang chủ</Link>
+          <Link to="/stats" style={{ color: 'inherit', fontWeight: 'bold' }}>Thống kê</Link>
         </nav>
       </header>
 
@@ -41,16 +48,18 @@ export function App() {
           path="/"
           element={
             <main>
-              <div>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
                 <input
                   type="text"
                   placeholder="Tìm kiếm sách hoặc tác giả..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{ padding: '8px 12px', minWidth: '260px', borderRadius: '4px', border: '1px solid #ccc' }}
                 />
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value as BookCategory | 'Tất cả')}
+                  style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc' }}
                 >
                   <option value="Tất cả">Tất cả</option>
                   <option value="CNTT">CNTT</option>

@@ -1,3 +1,4 @@
+/// <reference types="@types/jest" />
 import { renderHook, act } from '@testing-library/react';
 import { useDebounce } from './useDebounce';
 

@@ -1,4 +1,5 @@
-import React from 'react';
+/// <reference types="@types/jest" />
+import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BookItem } from './BookItem';
