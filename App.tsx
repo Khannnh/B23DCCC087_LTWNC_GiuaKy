@@ -1,99 +1,79 @@
-import React, { useEffect, useMemo, useState } from 'react';
+// src/App.tsx
+import React, { Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from './src/app/hooks';
-import { getAssignments } from './src/features/assignments/assignmentSlice';
-import { AssignmentForm } from './src/features/assignments/components/assignmentForm';
-import { AssignmentFilter } from './src/features/assignments/components/assignmentFilter';
-import { AssignmentCard } from './src/features/assignments/components/assignmentCard';
-import { isOverdueAssignment } from './src/features/assignments/types';
+import { loadBooks } from './src/features/books/booksSlice';
+import { BookList } from './src/features/books/components/BookList';
+import { useFilterStore } from './src/features/filters/useFilterStore';
+import { useTheme } from './src/context/ThemeContext';
+import { BookCategory } from './src/features/books/types';
 
-export default function App() {
+const StatsPage = React.lazy(() => import('./src/pages/StatsPage'));
+
+export function App() {
   const dispatch = useAppDispatch();
-  const { items, status, error, filter } = useAppSelector((state) => state.assignments);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { loading, error } = useAppSelector((state) => state.books);
+  const { searchTerm, setSearchTerm, selectedCategory, setSelectedCategory } = useFilterStore();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
-    dispatch(getAssignments());
+    dispatch(loadBooks());
   }, [dispatch]);
 
-  const filteredAssignments = useMemo(() => {
-    return items.filter((item) => {
-      if (filter === 'COMPLETED') return item.isCompleted;
-      if (filter === 'PENDING') return !item.isCompleted && !isOverdueAssignment(item);
-      if (filter === 'OVERDUE') return isOverdueAssignment(item);
-      return true;
-    });
-  }, [items, filter]);
-
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '80px 32px', boxSizing: 'border-box' }}>
-      <div style={{ maxWidth: '100%', margin: '0 auto' }}>
-        
-        {/* Header Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-          <div>
-            <h1 style={{ margin: '0 0 4px 0', fontSize: '48px', fontWeight: 700, color: '#0f172a' }}>
-              Student Deadline Tracker
-            </h1>
-            <p style={{ margin: 0, fontSize: '28px', color: '#64748b' }}>
-              Theo dõi và quản lý hạn nộp bài tập cá nhân
-            </p>
-          </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            style={{
-              backgroundColor: '#2563eb',
-              color: '#ffffff',
-              border: 'none',
-              padding: '9px 16px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: 500,
-              fontSize: '14px',
-              boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-            }}
-          >
-            + Thêm bài tập
-          </button>
-        </div>
+    <div style={{
+      backgroundColor: theme === 'light' ? '#fff' : '#222',
+      color: theme === 'light' ? '#000' : '#fff',
+      minHeight: '100vh',
+      padding: '16px'
+    }}>
+      <header>
+        <h1>Mini Library</h1>
+        <button onClick={toggleTheme}>Đổi sang chế độ {theme === 'light' ? 'Tối' : 'Sáng'}</button>
+        <nav style={{ margin: '10px 0' }}>
+          <Link to="/" style={{ marginRight: '10px', color: 'inherit' }}>Trang chủ</Link>
+          <Link to="/stats" style={{ color: 'inherit' }}>Thống kê</Link>
+        </nav>
+      </header>
 
-        {/* Bộ lọc trạng thái */}
-        <AssignmentFilter />
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <main>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm sách hoặc tác giả..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value as BookCategory | 'Tất cả')}
+                >
+                  <option value="Tất cả">Tất cả</option>
+                  <option value="CNTT">CNTT</option>
+                  <option value="Kinh tế">Kinh tế</option>
+                  <option value="Ngoại ngữ">Ngoại ngữ</option>
+                </select>
+              </div>
 
-        {/* Modal Popup */}
-        <AssignmentForm isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-
-        {/* Danh sách */}
-        <div>
-          {status === 'loading' && (
-            <p style={{ textAlign: 'center', color: '#64748b', padding: '30px', fontSize: '28px' }}>
-              Đang tải dữ liệu từ hệ thống...
-            </p>
-          )}
-
-          {status === 'failed' && (
-            <p style={{ textAlign: 'center', color: '#dc2626', padding: '30px', fontSize: '28px' }}>
-              Không thể tải dữ liệu: {error}
-            </p>
-          )}
-
-          {status === 'succeeded' && filteredAssignments.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#ffffff', borderRadius: '10px', border: '1px dashed #cbd5e1' }}>
-              <p style={{ margin: 0, color: '#64748b', fontSize: '28px' }}>
-                Không có bài tập nào trong mục này.
-              </p>
-            </div>
-          )}
-
-          {filteredAssignments.map((assignment) => (
-            <AssignmentCard key={assignment.id} assignment={assignment}>
-              <AssignmentCard.Header />
-              <AssignmentCard.Body />
-              <AssignmentCard.Footer />
-            </AssignmentCard>
-          ))}
-        </div>
-
-      </div>
+              {loading && <p>Đang tải...</p>}
+              {error && <p role="alert" style={{ color: 'red' }}>{error}</p>}
+              {!loading && !error && <BookList />}
+            </main>
+          }
+        />
+        <Route
+          path="/stats"
+          element={
+            <Suspense fallback={<p>Đang tải trang thống kê...</p>}>
+              <StatsPage />
+            </Suspense>
+          }
+        />
+      </Routes>
     </div>
   );
 }
